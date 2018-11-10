@@ -64,7 +64,7 @@ app.listen(3001, function () {
 
 
 
-app.get('/graficos/data_sentimento', function (req, res) {
+app.get('/graficos/data_sentimento/:id', function (req, res) {
 
   client.connect(function(err) {
     assert.equal(null, err);
@@ -76,11 +76,11 @@ app.get('/graficos/data_sentimento', function (req, res) {
 
     collection.aggregate(
         [
-          /*{
+          {
             "$match" : {
-              "user_id" : "2070433059685689"
+              "user_id" : req.params.id
             }
-          },*/
+          },
           {
             "$group" : {
               "_id" : {
@@ -161,7 +161,7 @@ app.get('/graficos/data_sentimento', function (req, res) {
 });
 
 
-app.get('/graficos/grafico_sentimentos', function (req, res) {
+app.get('/graficos/grafico_sentimentos/:id', function (req, res) {
 
   client.connect(function(err) {
     assert.equal(null, err);
@@ -173,6 +173,11 @@ app.get('/graficos/grafico_sentimentos', function (req, res) {
 
     collection.aggregate(
         [
+          {
+            "$match" : {
+              "user_id" : req.params.id
+            }
+          },
           {
             "$group" : {
               "_id" : {
@@ -202,6 +207,43 @@ app.get('/graficos/grafico_sentimentos', function (req, res) {
       docs.forEach(function(data){
         labels.push(data[Object.keys(data)[0]]);
         dados.push(data[Object.keys(data)[1]]);
+      });
+
+
+      let ret = {labels:labels,data:dados}
+
+      res.send(ret);
+
+    });
+
+
+
+  });
+  //client.close();
+
+});
+
+
+
+
+app.get('/usuarios', function (req, res) {
+
+  client.connect(function(err) {
+    assert.equal(null, err);
+
+    const db = client.db(dbName);
+
+    const collection = db.collection('gob_user');
+
+    collection.find({}
+    ).toArray(function(err, docs) {
+      assert.equal(err, null);
+      console.log("Found the following records");
+      let labels = []
+      let dados = []
+      docs.forEach(function(data){
+        dados.push(data['user_id']);
+        labels.push(data['nome']);
       });
 
 
